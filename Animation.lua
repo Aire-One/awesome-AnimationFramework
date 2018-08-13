@@ -96,7 +96,7 @@ local Animation = function (object, duration, end_step, function_type)
     --- Stop the animation ("force stop" it)
     self.stopAnimation = function (self)
         mTween = nil -- free the tween memory
-        if mTimer.started then
+        if mTimer and mTimer.started then
             mTimer:stop()
             mTimer = nil -- also free timer, it's a bit useless to keep it o/
             self:emit_signal('anim::animation_stoped')
