@@ -48,7 +48,10 @@ local AnimatedObject = function (object)
     local mAnimations = {}
 
     local animFinishedSignal = function (s)
-        table.remove(mAnimations, array.find(mAnimations, s))
+        local anim_index = array.find(mAnimations, s)
+        if anim_index ~= -1 then
+            table.remove(mAnimations, anim_index)
+        end
 
         if array.isEmpty(mAnimations) then
             self:emit_signal('anim::animation_finished')
