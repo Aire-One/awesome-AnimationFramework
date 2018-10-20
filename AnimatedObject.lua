@@ -30,6 +30,9 @@ local array = {
             end
         end
         return -1
+    end,
+    isEmpty = function (array)
+        return #array == 0 or array == {}
     end
 }
 
@@ -45,8 +48,11 @@ local AnimatedObject = function (object)
     local mAnimations = {}
 
     local animFinishedSignal = function (s)
-        self:emit_signal('anim::animation_finished', s)
         table.remove(mAnimations, array.find(mAnimations, s))
+
+        if array.isEmpty(mAnimations) then
+            self:emit_signal('anim::animation_finished')
+        end
     end
 
     --- Add an animation to the list.
