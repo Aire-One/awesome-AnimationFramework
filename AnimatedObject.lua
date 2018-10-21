@@ -46,6 +46,7 @@ local AnimatedObject = function (object)
 
     local mObject = object
     local mAnimations = {}
+    local mFinal_cb = nil
 
     local animFinishedSignal = function (s)
         local anim_index = array.find(mAnimations, s)
@@ -55,6 +56,11 @@ local AnimatedObject = function (object)
 
         if array.isEmpty(mAnimations) then
             self:emit_signal('anim::animation_finished')
+
+            if type(mFinal_cb) == 'function' then
+                mFinal_cb(self)
+                mFinal_cb = nil
+            end
         end
     end
 
@@ -91,7 +97,11 @@ local AnimatedObject = function (object)
     end
 
     --- Start all animations.
-    self.startAnimations = function (self)
+    self.startAnimations = function (self, final_callback)
+        if type(final_callback) == 'function' then
+            mFinal_cb = final_callback
+        end
+
         array.foreach(mAnimations, function(i, e)
             e:startAnimation()
         end)
@@ -108,6 +118,7 @@ local AnimatedObject = function (object)
     self.clearAnimations = function (self)
         self:stopAnimations()
         mAnimations = {}
+        mFinal_cb = nil
     end
 
     return self
