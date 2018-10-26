@@ -64,7 +64,7 @@ local Animation = function (object, duration, end_step, function_type)
         self:emit_signal('anim::animation_updated', delta, time)
 
         -- notify awesome the object need to be redrawn
-        mObject:emit_signal('widget::redraw_needed')
+        --mObject:emit_signal('widget::redraw_needed')
 
         if completed then
             self:emit_signal('anim::animation_finished')
