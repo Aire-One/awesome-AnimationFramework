@@ -1,4 +1,4 @@
-# Animation Framework for Awesome WM
+# Awesome WM - Animation Framework
 
 This repo contains my implementation of a simple animation framework based on
 [tween.lua][gh:kikito/tween.lua] for the Awesome WM.
@@ -185,4 +185,3 @@ See [this post from Elv13 on reddit][Elv13-issue-reddit] for more precision.
 [gh:kikito/tween.lua]:https://github.com/kikito/tween.lua
 [demo]:doc/demo.gif
 [Elv13-issue-reddit]:https://www.reddit.com/r/awesomewm/comments/8d7l2j/would_you_like_an_animated_wm/dxv7uod
-
