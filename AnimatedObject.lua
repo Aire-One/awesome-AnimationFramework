@@ -9,46 +9,22 @@
 
 local gears = require('gears')
 local GearsObject = gears.object
+local gtable = gears.table
 
 local Animation = require('awesome-AnimationFramework/Animation')
 
-local array = {
-    foreach = function (array, callback)
-        for i=1, #array do
-            (function (i, element) -- luacheck: ignore shadowing i
-                callback(i, element)
-            end)(i, array[i])
-        end
-    end,
-    insert = function (array, element)
-        array[#array + 1] = element
-        return array
-    end,
-    find = function (array, element)
-        for i=1, #array do
-            if array[i] == element then
-                return i
-            end
-        end
-        return -1
-    end,
-    isEmpty = function (array)
-        return #array == 0 or array == {}
-    end
-}
-
 --- Add an animation to the list of animations to play on the subject.
 -- @tparam AnimatedObject self The AnimatedObject itself.
--- @tparam Animation The animation to add to the pliing list.
+-- @tparam Animation animation The animation to add to the pliing list.
 local addAnimation = function (self, animation)
-    array.insert(self.anims, animation)
+    self.anims[#self.anims + 1] = animation
 end
 
 --- Create a new Animation.
 -- @tparam AnimatedObject self The AnimatedObject itself.
--- @tparam end_step Object representing the final state of the animation.
--- @tparam function_type Function name to use for the animation.
--- @tparam duration Animation duration.
+-- @tparam table end_step representing the final state of the animation.
+-- @tparam callback function_type Function name to use for the animation.
+-- @tparam number duration Animation duration.
 local createAnimation = function (self, end_step, function_type, duration)
         local anim = Animation(self.subject, duration, end_step, function_type)
         anim:connect_signal('anim::animation_finished', self.anim_finiched_signal)
@@ -58,24 +34,24 @@ end
 
 --- Start all animations registered in the animation list.
 -- @tparam AnimatedObject self The AnimatedObject itself.
--- @tparam function final_callback An optionable final callback to call at the
+-- @tparam callback final_callback An optionable final callback to call at the
 --   very end of the plaiing process.
 local startAnimations = function (self, final_callback)
     if type(final_callback) == 'function' then
         self.final_callback = final_callback
     end
 
-    array.foreach(self.anims, function(i, e) -- luacheck: ignore i
-        e:startAnimation()
-    end)
+    for i,anim in ipairs(self.anims) do -- luacheck: ignore i
+        anim:startAnimation()
+    end
 end
 
 --- Stop all animations.
 -- @tparam AnimatedObject self The AnimatedObject itself.
 local stopAnimations = function (self)
-    array.foreach(self.anims, function(i, e) -- luacheck: ignore i
-        e:stopAnimation()
-    end)
+    for i,anim in ipairs(self.anims) do -- luacheck: ignore i
+        anim:stopAnimation()
+    end
 end
 
 --- Clear the animations list.
@@ -92,7 +68,7 @@ local AnimatedObject =  {}
 --- Wrapper for Animated objects.
 -- This container associates an Object with its Animations, giving a better
 -- interface to manage them. It also provide some signals for events handling.
--- @tparam Table object The "object" to animate (should be a wibox).
+-- @tparam table object The "object" to animate (should be a wibox).
 -- @treturn AnimatedObject An AnimatedObject instance.
 AnimatedObject.new = function (object)
     local self = GearsObject()
@@ -102,12 +78,13 @@ AnimatedObject.new = function (object)
     self.final_callcack = nil
 
     self.anim_finiched_signal = function (s)
-        local anim_index = array.find(self.anims, s)
+        local anim_index = gtable.hasitem(self.anims, s)
         if anim_index ~= -1 then
             table.remove(self.anims, anim_index)
         end
 
-        if array.isEmpty(self.anims) then
+        -- if array.isEmpty(self.anims) then
+        if #self.anims == 0 then
             self:emit_signal('anim::animation_finished')
 
             if type(self.final_callback) == 'function' then
