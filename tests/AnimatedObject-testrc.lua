@@ -55,8 +55,8 @@ wid:object().width = 300
 print('There are currently ' .. wid:animations().length
     .. ' animations registered.')
 
-wid:connect_signal('anim::animation_finished', function (s, anim)
-    print(s, 'anim finished', anim)
+wid:connect_signal('anim::animation_finished', function (s)
+    print(s, 'anim finished')
 end)
 
 animationWidget:connect_signal('mouse::enter', function (c)
