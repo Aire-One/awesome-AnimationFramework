@@ -7,33 +7,45 @@
 -- Author : Aire-One (Aire-One@github.com ; Aire-One@gitlab.com)
 -----------------
 
-local gears = require('gears')
 local glib = require('lgi').GLib
-local GearsObject = gears.object
-local GLibTimer = glib.Timer
-local timer = gears.timer or require('timer')
+local gears = require('gears')
+local gobject = gears.object
+local gtable = gears.table
 
 local tween = require('awesome-AnimationFramework/tween-lua/tween')
 
--- Delay time for imitate a 60 FPS refresh rate
-local ANIMATION_FRAME_DELAY = 0.0167
 
+local Animation = {
+    --- Time between two frames in milliseconds (default emulate 60 FPS).
+    -- Default value is set to `16.7` to emulate a 60 FPS animation.
+    ANIMATION_FRAME_DELAY = 16.7
+}
+local mt = {}
 
 --- Start the animation.
 -- @tparam Animation self The animation itself.
 -- @tparam Number delay An additional delay before plaiing the animation
 --   (in seconds).
-local startAnimation = function (self, delay)
+Animation.startAnimation = function (self, delay)
     if type(delay) == 'number' then
         self:setStartDelay(delay)
     end
 
     -- Temporary timer to create the start delay.
     -- Animation will be initialized and started after the delay.
-    timer.start_new(self.delay, function ()
-        self.tween = tween.new(self.duration, self.subject, self.target, self.easing)
-        self.gTimer:start()
-        self.timer = timer.start_new(ANIMATION_FRAME_DELAY, self.timer_function)
+    glib.timeout_add(glib.PRIORITY_DEFAULT, self.delay, function ()
+        self.last_elapsed = glib.get_monotonic_time()
+
+        self.tween = tween.new(
+            self.duration,
+            self.subject,
+            self.target, self.easing)
+
+        self.timer = glib.timeout_add(
+            glib.PRIORITY_DEFAULT,
+            self.ANIMATION_FRAME_DELAY,
+            self.timer_function)
+
         self:emit_signal('anim::animation_started', self.delay)
 
         return false -- do not call again
@@ -42,11 +54,12 @@ end
 
 --- Stop the animation ("force stop" it).
 -- @tparam Animation self The animation itself.
-local stopAnimation = function (self)
+Animation.stopAnimation = function (self)
     self.tween = nil -- free the tween memory
     if self.timer and self.timer.started then
-        self.timer:stop()
-        self.timer = nil -- also free timer, it's a bit useless to keep it o/
+        glib.source_remove(self.timer)
+        self.timer = nil  -- this reference no longer exists in glib's memory
+
         self:emit_signal('anim::animation_stoped')
     end
 end
@@ -55,11 +68,9 @@ end
 -- @tparam Animation self The animation itself.
 -- @tparam Number delay An additional delay before plaiing the animation
 --   (in seconds).
-local setStartDelay = function (self, delay)
+Animation.setStartDelay = function (self, delay)
     self.delay = delay
 end
-
-local Animation = {}
 
 --- Animation Constructor.
 -- Creates a new Animation.
@@ -70,13 +81,15 @@ local Animation = {}
 -- @tparam String function_type The name of the easing function to use.
 -- @treturn Animation A new instance of Animation.
 Animation.new = function (object, duration, end_step, function_type)
-    local self = GearsObject()
+    local self = gobject()
+    gtable.crush(self, Animation, true)
 
     -- Object to animate (should be a widget)
     self.subject = object
 
     -- Duration of the animation in seconds
-    self.duration = duration
+    -- We currently work with micoseconds. 1 microsecond = 1e-6 second
+    self.duration = duration * 1000000
 
     -- Finale state of of the animation : { prop = val [, ...] }
     self.target = end_step
@@ -87,13 +100,11 @@ Animation.new = function (object, duration, end_step, function_type)
     -- Tween Object (manage the animation)
     self.tween = nil
 
-    -- Timer to compute Animation Delta Time
-    self.gTimer = GLibTimer()
-
     -- Last value of mGTimer:elapsed()
     self.last_elapsed = 0
 
     -- Timer of the animation
+    -- Glib.Timer's reference
     self.timer = nil
 
     -- Delay before starting the animation when startAnimation is called
@@ -102,11 +113,13 @@ Animation.new = function (object, duration, end_step, function_type)
     -- Timer callcabk
     self.timer_function = function ()
         -- compute delta time
-        local time = self.gTimer:elapsed()
+        local time = glib.get_monotonic_time()
         local delta = time - self.last_elapsed
         self.last_elapsed = time
 
         local completed = self.tween:update(delta)
+
+        -- TODO : specify where to use seconds/milli/micro
         self:emit_signal('anim::animation_updated', delta, time)
 
         -- notify awesome the object need to be redrawn
@@ -121,15 +134,13 @@ Animation.new = function (object, duration, end_step, function_type)
         return true
     end
 
-    -- We implement methods like this for backward compatibility.
-    self.startAnimation = startAnimation
-    self.stopAnimation = stopAnimation
-    self.setStartDelay = setStartDelay
-
     return self
 end
 
 
--- Return Animation.new to ensure backward compatibility.
--- When this refactoring will be completed, we will use metatable.
-return Animation.new
+mt.__call = function (self, ...)
+    return Animation.new(...)
+end
+
+
+return setmetatable(Animation, mt)
