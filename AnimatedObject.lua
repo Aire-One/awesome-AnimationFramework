@@ -8,15 +8,19 @@
 -----------------
 
 local gears = require('gears')
-local GearsObject = gears.object
+local gobject = gears.object
 local gtable = gears.table
 
 local Animation = require('awesome-AnimationFramework/Animation')
 
+
+local AnimatedObject =  {}
+local mt = {}
+
 --- Add an animation to the list of animations to play on the subject.
 -- @tparam AnimatedObject self The AnimatedObject itself.
 -- @tparam Animation animation The animation to add to the pliing list.
-local addAnimation = function (self, animation)
+AnimatedObject.addAnimation = function (self, animation)
     self.anims[#self.anims + 1] = animation
 end
 
@@ -25,7 +29,7 @@ end
 -- @tparam table end_step representing the final state of the animation.
 -- @tparam callback function_type Function name to use for the animation.
 -- @tparam number duration Animation duration.
-local createAnimation = function (self, end_step, function_type, duration)
+AnimatedObject.createAnimation = function (self, end_step, function_type, duration)
         local anim = Animation(self.subject, duration, end_step, function_type)
         anim:connect_signal('anim::animation_finished', self.anim_finiched_signal)
         self:addAnimation(anim)
@@ -36,7 +40,7 @@ end
 -- @tparam AnimatedObject self The AnimatedObject itself.
 -- @tparam callback final_callback An optionable final callback to call at the
 --   very end of the plaiing process.
-local startAnimations = function (self, final_callback)
+AnimatedObject.startAnimations = function (self, final_callback)
     if type(final_callback) == 'function' then
         self.final_callback = final_callback
     end
@@ -48,7 +52,7 @@ end
 
 --- Stop all animations.
 -- @tparam AnimatedObject self The AnimatedObject itself.
-local stopAnimations = function (self)
+AnimatedObject.stopAnimations = function (self)
     for i,anim in ipairs(self.anims) do -- luacheck: ignore i
         anim:stopAnimation()
     end
@@ -56,14 +60,11 @@ end
 
 --- Clear the animations list.
 -- @tparam AnimatedObject self The AnimatedObject itself.
-local clearAnimations = function (self)
+AnimatedObject.clearAnimations = function (self)
     self:stopAnimations()
     self.anims = {}
     self.final_callback = nil
 end
-
-
-local AnimatedObject =  {}
 
 --- Wrapper for Animated objects.
 -- This container associates an Object with its Animations, giving a better
@@ -71,7 +72,8 @@ local AnimatedObject =  {}
 -- @tparam table object The "object" to animate (should be a wibox).
 -- @treturn AnimatedObject An AnimatedObject instance.
 AnimatedObject.new = function (object)
-    local self = GearsObject()
+    local self = gobject()
+    gtable.crush(self, AnimatedObject, true)
 
     self.subject = object
     self.anims = {}
@@ -111,17 +113,11 @@ AnimatedObject.new = function (object)
         }
     end
 
-    -- We implement methods like this for backward compatibility.
-    self.addAnimation = addAnimation
-    self.createAnimation = createAnimation
-    self.startAnimations = startAnimations
-    self.stopAnimations = stopAnimations
-    self.clearAnimations = clearAnimations
-
     return self
 end
 
+mt.__call = function (self, ...)
+    return AnimatedObject.new(...)
+end
 
--- Return AnimatedObject.new to ensure backward compatibility.
--- When this refactoring will be completed, we will use metatable.
-return AnimatedObject.new
+return setmetatable(AnimatedObject, mt)
