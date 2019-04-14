@@ -1,5 +1,5 @@
 -----------------
--- Animation.lua
+-- AnimatedObject.lua
 -- A wrapper to easily manage objects and their animations.
 --
 -- The AnimatiedObject module should be use to animate your wiboxes and widgets.
