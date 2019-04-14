@@ -1,16 +1,34 @@
 -----------------
 -- Animation.lua
--- A simple OO overlay for tween.lua to perform Animations in Awesome WM.
+-- A simple object-oriented overlay for tween.lua to perform Animations in
+-- Awesome WM.
 --
--- Copyright (C) 2018-2019 Aire-One
+-- The Animation module should be use to animate your wiboxes and widgets.
+-- It is an abstraction layer over the `tween.lua` library written with Awesome
+-- WM in mind. Please note this is hightly experimental and you shouldn't
+-- perform animations from Awesome WM itself.
 --
--- Author : Aire-One (Aire-One@github.com ; Aire-One@gitlab.com)
+-- To use this OO abstraction you should first define your subject.
+-- A subject can be either, a wiboxes or a widget.
+-- It is not recommanded to use a client. A client is managed by the layout API
+-- and modifiing its geometries will not work at all.
+-- It is however possible to make it work with floating clients (but still not
+-- recommanded).
+--
+-- @usage
+-- local my_animation = AnimationFramework.Animation(my_wibox, 0.42,  { ... }, 'linear')
+--
+-- @author Aire-One (Aire-One@github.com ; Aire-One@gitlab.com)
+-- @copyright 2018 - 2019 Aire-One
 -----------------
 
 local glib = require('lgi').GLib
 local gears = require('gears')
 local gobject = gears.object
 local gtable = gears.table
+
+local deprecate = gears.debug.deprecate
+
 
 local tween = require('awesome-AnimationFramework/tween-lua/tween')
 
@@ -24,7 +42,7 @@ local mt = {}
 
 --- Start the animation.
 -- @tparam Animation self The animation itself.
--- @tparam Number delay An additional delay before plaiing the animation
+-- @tparam[opt] Number delay An additional delay before plaiing the animation
 --   (in seconds).
 Animation.startAnimation = function (self, delay)
     if type(delay) == 'number' then
@@ -69,33 +87,35 @@ end
 -- @tparam Number delay An additional delay before plaiing the animation
 --   (in seconds).
 Animation.setStartDelay = function (self, delay)
+    deprecate("Please use `Animation.delay` property instead.")
+
     self.delay = delay
 end
 
 --- Animation Constructor.
 -- Creates a new Animation.
--- @tparam Table object The "object" to animate (should be a wibox).
+-- @tparam Table subject The subject to animate (should be a wibox).
 -- @tparam Number duration The time the animation will last (in seconds).
--- @tparam Table end_step The finale state of the "object" attribus which change
---   while the animation is plaiing.
--- @tparam String function_type The name of the easing function to use.
+-- @tparam Table target Representes the final state of the subject at the
+--   animation end. This table must be a table with at least the same keys as
+--   the _subject_. Other keys will be ignored.
+-- @tparam callback easing Function name or function declaration.
 -- @treturn Animation A new instance of Animation.
-Animation.new = function (object, duration, end_step, function_type)
+Animation.new = function (subject, duration, target, easing)
     local self = gobject()
     gtable.crush(self, Animation, true)
 
-    -- Object to animate (should be a widget)
-    self.subject = object
+    self.subject = subject
 
     -- Duration of the animation in seconds
     -- We currently work with micoseconds. 1 microsecond = 1e-6 second
     self.duration = duration * 1000000
 
     -- Finale state of of the animation : { prop = val [, ...] }
-    self.target = end_step
+    self.target = target
 
     -- Animation Function type (string)
-    self.easing = function_type
+    self.easing = easing
 
     -- Tween Object (manage the animation)
     self.tween = nil

@@ -2,14 +2,35 @@
 -- Animation.lua
 -- A wrapper to easily manage objects and their animations.
 --
--- Copyright (C) 2018 - 2019 Aire-One
+-- The AnimatiedObject module should be use to animate your wiboxes and widgets.
+-- It is an abstraction layer over the Animation module. You can use the
+-- AnimatedObject module to wrap up your UI components created with the standard
+-- library of Awesome WM and animations.
 --
--- Author : Aire-One (Aire-One@github.com ; Aire-One@gitlab.com)
+-- To use this wrapper you should first define your subject.
+-- To use this OO abstraction you should first define your subject.
+-- A subject can be either, a wiboxes or a widget.
+-- It is not recommanded to use a client. A client is managed by the layout API
+-- and modifiing its geometries will not work at all.
+-- It is however possible to make it work with floating clients (but still not
+-- recommanded).
+--
+-- Create your AnimatedObject instance with your wibox:
+--     local my_wibox = wibox { ... }
+--     local my_animated_object(my_wibox)
+--
+-- @usage
+-- local my_animated_object = AnimationFramework.AnimatedObject(my_wibox)
+--
+-- @author Aire-One (Aire-One@github.com ; Aire-One@gitlab.com)
+-- @copyright 2018 - 2019 Aire-One
 -----------------
 
 local gears = require('gears')
 local gobject = gears.object
 local gtable = gears.table
+
+local deprecate = gears.debug.deprecate
 
 local Animation = require('awesome-AnimationFramework/Animation')
 
@@ -21,19 +42,61 @@ local mt = {}
 -- @tparam AnimatedObject self The AnimatedObject itself.
 -- @tparam Animation animation The animation to add to the pliing list.
 AnimatedObject.addAnimation = function (self, animation)
+    deprecate("AnimatedObject.register_animation")
+
     self.anims[#self.anims + 1] = animation
 end
 
 --- Create a new Animation.
 -- @tparam AnimatedObject self The AnimatedObject itself.
--- @tparam table end_step representing the final state of the animation.
--- @tparam callback function_type Function name to use for the animation.
+-- @tparam table target Representes the final state of the subject at the
+--   animation end. This table must be a table with at least the same keys as
+--   the _subject_. Other keys will be ignored.
+-- @tparam callback easing Function name or function declaration.
 -- @tparam number duration Animation duration.
-AnimatedObject.createAnimation = function (self, end_step, function_type, duration)
-        local anim = Animation(self.subject, duration, end_step, function_type)
-        anim:connect_signal('anim::animation_finished', self.anim_finiched_signal)
-        self:addAnimation(anim)
-        return anim
+AnimatedObject.createAnimation = function (self, target, easing, duration)
+    deprecate("AnimatedObject.register_animation")
+
+    local anim = Animation(self.subject, duration, target, easing)
+    anim:connect_signal('anim::animation_finished', self.anim_finiched_signal)
+    self:addAnimation(anim)
+    return anim
+end
+
+--- Register an animation to be played.
+-- @tparam AnimatedObject self The AnimatedObject itself.
+-- @tparam table args table with options for the animation to register (other
+--   fields will be ignored if `args.animation` is specified).
+-- @tparam Animation args.animation The animation to register.
+-- @tparam table args.target Representes the final state of the subject at the
+--   animation end. This table must be a table with at least the same keys as
+--   the _subject_. Other keys will be ignored.
+-- @tparam callback args.easing Function name or function declaration.
+-- @tparam number args.duration Animation duration.
+-- @tparam[opt] number args.delay An additional delay to wait before plaiing the
+--   animation when _start_ is triggered.
+-- @usage my_animated_object:register_animation { animation = my_animation, delay = 0.5 }
+-- @usage my_animated_object:register_animation {
+--     target = { ... },
+--     easing = 'linear',
+--     duration = 0.34
+-- }
+AnimatedObject.register_animation = function (self, args)
+    if not args.animation then
+        self:register_animation {
+            animation = Animation(
+                args.target or {},
+                args.easing or nil,
+                args.duration or 0
+            )
+        }
+    end
+
+    self.anims[self.anims + 1] = args.animation
+
+    if args.delay then
+        self.anims[self.anims].delay = args.delay
+    end
 end
 
 --- Start all animations registered in the animation list.
@@ -66,6 +129,29 @@ AnimatedObject.clearAnimations = function (self)
     self.final_callback = nil
 end
 
+
+--- Accessor to Animations.
+-- This method gives a table with quick access and control over registered
+-- animations.
+-- @tparam AnimatedObject self The AnimatedObject itself.
+-- @treturn[1] table A table with quick access to registered animations.
+-- @treturn[1] table list The List of animation currently registered.
+-- @treturn[1] number length The length of the list (number of registered animations).
+-- @treturn[1] function start Start all the registered animations.
+-- @treturn[1] function stop Stop all the registered animations.
+-- @treturn[1] function clear Stop and clear the list of registered animations.
+AnimatedObject.animations = function (self)
+    deprecate()
+
+    return {
+        list = self.anims,
+        length = #self.anims,
+        start = function () self:startAnimations() end,
+        stop = function () self:stopAnimations() end,
+        clear = function() self:clearAnimations() end
+    }
+end
+
 --- Wrapper for Animated objects.
 -- This container associates an Object with its Animations, giving a better
 -- interface to manage them. It also provide some signals for events handling.
@@ -90,6 +176,8 @@ AnimatedObject.new = function (object)
             self:emit_signal('anim::animation_finished')
 
             if type(self.final_callback) == 'function' then
+                deprecate('final_callback will be deprecated, please use signals instead.')
+
                 self.final_callback(self)
                 self.final_callback = nil
             end
@@ -99,18 +187,9 @@ AnimatedObject.new = function (object)
     --- Accessor to Object.
     -- It's keept here for backward conmpatibility but will be deleted at merge.
     self.object = function (self)
-        return self.subject
-    end
+        deprecate()
 
-    --- Accessor to Animations.
-    self.animations = function (self)
-        return {
-            list = self.anims,
-            length = #self.anims,
-            start = function () self:startAnimations() end,
-            stop = function () self:stopAnimations() end,
-            clear = function() self:clearAnimations() end
-        }
+        return self.subject
     end
 
     return self

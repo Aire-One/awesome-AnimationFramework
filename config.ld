@@ -8,7 +8,7 @@ full_description = [[
 for the Awesome WM.</p>
 ]]
 
-all = true
+all = false
 dir = 'doc'
 format='markdown'
 pretty = 'lua'
