@@ -74,7 +74,7 @@ end
 -- @tparam Animation self The animation itself.
 Animation.stopAnimation = function (self)
     self.tween = nil -- free the tween memory
-    if self.timer and self.timer.started then
+    if type(self.timer) == "table" and self.timer.stared then
         glib.source_remove(self.timer)
         self.timer = nil  -- this reference no longer exists in glib's memory
 
