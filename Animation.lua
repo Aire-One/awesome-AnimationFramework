@@ -46,7 +46,7 @@ local mt = {}
 --   (in seconds).
 Animation.startAnimation = function (self, delay)
     if type(delay) == 'number' then
-        self:setStartDelay(delay)
+        self.delay = delay
     end
 
     -- Temporary timer to create the start delay.

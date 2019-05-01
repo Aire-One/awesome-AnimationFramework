@@ -81,22 +81,30 @@ end
 --     easing = 'linear',
 --     duration = 0.34
 -- }
+-- @usage my_animated_object:register_animation {
+--     target = { ... },
+--     duration = 0.34,
+--     delay = 0.5
+-- }
 AnimatedObject.register_animation = function (self, args)
     if not args.animation then
-        self:register_animation {
+        return self:register_animation {
             animation = Animation(
+                self.subject,
+                args.duration or 0,
                 args.target or {},
-                args.easing or nil,
-                args.duration or 0
+                args.easing or nil
             )
         }
     end
 
-    self.anims[self.anims + 1] = args.animation
+    self.anims[#self.anims + 1] = args.animation
 
     if args.delay then
         self.anims[self.anims].delay = args.delay
     end
+
+    return args.animation
 end
 
 --- Start all animations registered in the animation list.
