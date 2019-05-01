@@ -62,7 +62,7 @@ animationWidget:connect_signal('mouse::enter', function (c)
     local animW = Animation(animationWidget,
         0.325, { width = 300 }, 'inOutCubic')
     local animH = Animation(animationWidget,
-        0.325, { height = 300 }, 'inOutCubic')
+        0.25, { height = 300 }, 'inOutCubic')
 
     -- Once the Animations objects created,
     -- we can start them using :startAnimation method
@@ -87,7 +87,7 @@ end)
 -- Same logic for collapse transformation on  mouse::leave event
 animationWidget:connect_signal('mouse::leave', function (c)
     local animW = Animation(animationWidget, 0.325, { width = 100 }, 'inOutCubic')
-    local animH = Animation(animationWidget, 0.325, { height = 100 }, 'inOutCubic')
+    local animH = Animation(animationWidget, 0.25, { height = 100 }, 'inOutCubic')
     animH:startAnimation()
     animW:startAnimation(0.075)
 end)

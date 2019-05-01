@@ -65,7 +65,7 @@ animationWidget:connect_signal('mouse::enter', function (c)
 
     -- you can get back the Animation object...
     local animW = wid:createAnimation({ width = 300 }, 'inOutCubic', 0.325)
-    local animH = wid:createAnimation({ height = 300 }, 'inOutCubic', 0.325)
+    local animH = wid:createAnimation({ height = 300 }, 'inOutCubic', 0.25)
 
     -- ... and use it just like in the previous example:
     -- you can add the delay
@@ -81,7 +81,7 @@ end)
 animationWidget:connect_signal('mouse::leave', function (c)
     wid:animations().clear()
 
-    wid:createAnimation({ width = 100 }, 'inOutCubic', 0.325):setStartDelay(0.075)
+    wid:createAnimation({ width = 100 }, 'inOutCubic', 0.25):setStartDelay(0.075)
     wid:createAnimation({ height = 100 }, 'inOutCubic', 0.325)
 
     wid:animations().start()
