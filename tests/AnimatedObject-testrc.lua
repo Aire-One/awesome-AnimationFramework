@@ -50,39 +50,58 @@ local animationWidget = wibox ({
 local wid = AnimObj(animationWidget)
 
 -- wid contains your wibox and you still can access it:
-wid:object().width = 300
+wid.subject.width = 300
 -- you also can access to all the animations registered for you widget:
-print('There are currently ' .. wid:animations().length
+print('There are currently ' .. #wid.anims
     .. ' animations registered.')
 
 wid:connect_signal('anim::animation_finished', function (s)
     print(s, 'anim finished')
 end)
 
-animationWidget:connect_signal('mouse::enter', function (c)
+animationWidget:connect_signal('mouse::enter', function ()
     -- clear all the current animations on wid
-    wid:animations().clear()
+    wid:clearAnimations()
 
-    -- you can get back the Animation object...
-    local animW = wid:createAnimation({ width = 300 }, 'inOutCubic', 0.325)
-    local animH = wid:createAnimation({ height = 300 }, 'inOutCubic', 0.25)
+    -- Register a new animation
+    wid:register_animation {
+        target = { width = 300 },
+        easing = 'inOutCubic',
+        duration = 0.25
+    }
+
+    -- you can also get back the Animation object...
+    local animH = wid:register_animation {
+        target = { height = 300 },
+        easing = 'inOutCubic',
+        duration = 0.325
+    }
 
     -- ... and use it just like in the previous example:
     -- you can add the delay
-    animH:setStartDelay(0.075)
+    animH.delay = 0.075
     -- or connect its own signals
-    animW:connect_signal('anim::animation_started',
+    animH:connect_signal('anim::animation_started',
         function (s) print('anim stared', s) end)
 
     -- start all registered animations:
-    wid:animations().start()
+    wid:startAnimations()
 end)
 
-animationWidget:connect_signal('mouse::leave', function (c)
-    wid:animations().clear()
+animationWidget:connect_signal('mouse::leave', function ()
+    wid:clearAnimations()
 
-    wid:createAnimation({ width = 100 }, 'inOutCubic', 0.25):setStartDelay(0.075)
-    wid:createAnimation({ height = 100 }, 'inOutCubic', 0.325)
+    wid:register_animation {
+        target = { width = 100 },
+        easing = 'inOutCubic',
+        duration = 0.25,
+        delay = 0.075
+    }
+    wid:register_animation {
+        target = { height = 100 },
+        easing = 'inOutCubic',
+        duration = 0.325
+    }
 
-    wid:animations().start()
+    wid:startAnimations()
 end)

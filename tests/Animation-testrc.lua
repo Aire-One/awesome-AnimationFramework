@@ -52,7 +52,7 @@ local animationWidget = wibox ({
 })
 
 -- Expend transformation will occur when mouse::enter event is triggered
-animationWidget:connect_signal('mouse::enter', function (c)
+animationWidget:connect_signal('mouse::enter', function ()
     -- An animation is an instance of Animation object.
     -- Material Design Animation for transformations uses a Bezier curve
     -- referred as "ease in out".
@@ -85,7 +85,7 @@ animationWidget:connect_signal('mouse::enter', function (c)
 end)
 
 -- Same logic for collapse transformation on  mouse::leave event
-animationWidget:connect_signal('mouse::leave', function (c)
+animationWidget:connect_signal('mouse::leave', function ()
     local animW = Animation(animationWidget, 0.325, { width = 100 }, 'inOutCubic')
     local animH = Animation(animationWidget, 0.25, { height = 100 }, 'inOutCubic')
     animH:startAnimation()
