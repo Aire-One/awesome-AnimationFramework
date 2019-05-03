@@ -1,2 +1,2 @@
-# ignore generated documentation directory
-doc/ 
+# ignore generated directory
+build/

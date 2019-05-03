@@ -38,9 +38,11 @@ local Animation = require('awesome-AnimationFramework/Animation')
 local AnimatedObject =  {}
 local mt = {}
 
+
 --- Add an animation to the list of animations to play on the subject.
 -- @tparam AnimatedObject self The AnimatedObject itself.
 -- @tparam Animation animation The animation to add to the pliing list.
+-- @deprecated AnimatedObject.addAnimation
 AnimatedObject.addAnimation = function (self, animation)
     deprecate("AnimatedObject.register_animation")
 
@@ -54,6 +56,7 @@ end
 --   the _subject_. Other keys will be ignored.
 -- @tparam callback easing Function name or function declaration.
 -- @tparam number duration Animation duration.
+-- @deprecated AnimatedObject.createAnimation
 AnimatedObject.createAnimation = function (self, target, easing, duration)
     deprecate("AnimatedObject.register_animation")
 
@@ -75,6 +78,7 @@ end
 -- @tparam number args.duration Animation duration.
 -- @tparam[opt] number args.delay An additional delay to wait before plaiing the
 --   animation when _start_ is triggered.
+-- @method AnimatedObject.register_animation
 -- @usage my_animated_object:register_animation { animation = my_animation, delay = 0.5 }
 -- @usage my_animated_object:register_animation {
 --     target = { ... },
@@ -111,6 +115,7 @@ end
 -- @tparam AnimatedObject self The AnimatedObject itself.
 -- @tparam callback final_callback An optionable final callback to call at the
 --   very end of the plaiing process.
+-- @method AnimatedObject.startAnimations
 AnimatedObject.startAnimations = function (self, final_callback)
     if type(final_callback) == 'function' then
         self.final_callback = final_callback
@@ -123,6 +128,7 @@ end
 
 --- Stop all animations.
 -- @tparam AnimatedObject self The AnimatedObject itself.
+-- @method AnimatedObject.stopAnimations
 AnimatedObject.stopAnimations = function (self)
     for i,anim in ipairs(self.anims) do -- luacheck: ignore i
         anim:stopAnimation()
@@ -131,6 +137,7 @@ end
 
 --- Clear the animations list.
 -- @tparam AnimatedObject self The AnimatedObject itself.
+-- @method AnimatedObject.clearAnimations
 AnimatedObject.clearAnimations = function (self)
     self:stopAnimations()
     self.anims = {}
@@ -148,6 +155,7 @@ end
 -- @treturn[1] function start Start all the registered animations.
 -- @treturn[1] function stop Stop all the registered animations.
 -- @treturn[1] function clear Stop and clear the list of registered animations.
+-- @deprecated AnimatedObject.animations
 AnimatedObject.animations = function (self)
     deprecate()
 
@@ -165,12 +173,31 @@ end
 -- interface to manage them. It also provide some signals for events handling.
 -- @tparam table object The "object" to animate (should be a wibox).
 -- @treturn AnimatedObject An AnimatedObject instance.
+-- @function AnimatedObject.new
 AnimatedObject.new = function (object)
     local self = gobject()
     gtable.crush(self, AnimatedObject, true)
 
+    --- Subject of the animation (should be a wibox).
+    -- @property subject
+    -- @tparam table subject
     self.subject = object
+
+    --- List of registered animations.
+    --
+    -- This table is a list with all the registered animations for the given
+    -- subject. Each animation registered is an instance of Animation.
+    -- @property anims
+    -- @tparam table anims
+    -- @see Animation
     self.anims = {}
+
+    --- Callback called at the very end of all registered animations.
+    --
+    -- This callback is called when all registered animations are finished.
+    -- This callback is now deprecated and you should use signals instead.
+    -- @deprecatedproperty final_callback
+    -- @tparam function final_callback
     self.final_callcack = nil
 
     self.anim_finiched_signal = function (s)
@@ -194,6 +221,7 @@ AnimatedObject.new = function (object)
 
     --- Accessor to Object.
     -- It's keept here for backward conmpatibility but will be deleted at merge.
+    -- @deprecated object
     self.object = function (self)
         deprecate()
 
@@ -202,6 +230,13 @@ AnimatedObject.new = function (object)
 
     return self
 end
+
+--- All the registered animations are finished.
+--
+-- This signal is emited at the very end of all the registered animations, when
+-- they are all finished.
+-- @signal anim::animation_finished
+
 
 mt.__call = function (self, ...)
     return AnimatedObject.new(...)

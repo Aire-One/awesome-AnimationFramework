@@ -172,16 +172,6 @@ Keep it simple and it should be ok, it depends on your hardware specs.
 
 See [this post from Elv13 on reddit][Elv13-issue-reddit] for more precision.
 
-# Todo
-
-+ better `init.lua` file
-+ refactor `Animation.lua` to get out of `gears.timer` and deal directly with GTimer
-+ busted unit test
-+ better in-code doc with luadoc
-+ gh-pages documentations
-+ change code to properly manage arrays in `AnimatedObject.lua`
-+ rewrite code to coding style of awesome wm libs
-
 [gh:kikito/tween.lua]:https://github.com/kikito/tween.lua
-[demo]:doc/demo.gif
+[demo]:images/demo.gif
 [Elv13-issue-reddit]:https://www.reddit.com/r/awesomewm/comments/8d7l2j/would_you_like_an_animated_wm/dxv7uod

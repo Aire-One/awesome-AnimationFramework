@@ -44,6 +44,7 @@ local mt = {}
 -- @tparam Animation self The animation itself.
 -- @tparam[opt] Number delay An additional delay before plaiing the animation
 --   (in seconds).
+-- @method Animation.startAnimation
 Animation.startAnimation = function (self, delay)
     if type(delay) == 'number' then
         self.delay = delay
@@ -72,6 +73,7 @@ end
 
 --- Stop the animation ("force stop" it).
 -- @tparam Animation self The animation itself.
+-- @method Animation.stopAnimation
 Animation.stopAnimation = function (self)
     self.tween = nil -- free the tween memory
     if type(self.timer) == "table" and self.timer.stared then
@@ -83,9 +85,11 @@ Animation.stopAnimation = function (self)
 end
 
 --- Change the delay before starting the animation in startAnimation method.
+-- This method is deprecated, please use the `delay` property instead.
 -- @tparam Animation self The animation itself.
 -- @tparam Number delay An additional delay before plaiing the animation
 --   (in seconds).
+-- @deprecated Animation.setStartDelay
 Animation.setStartDelay = function (self, delay)
     deprecate("Please use `Animation.delay` property instead.")
 
@@ -101,21 +105,38 @@ end
 --   the _subject_. Other keys will be ignored.
 -- @tparam callback easing Function name or function declaration.
 -- @treturn Animation A new instance of Animation.
+-- @function Animation.new
 Animation.new = function (subject, duration, target, easing)
     local self = gobject()
     gtable.crush(self, Animation, true)
 
+    --- Subject of the animation (should be a wibox).
+    -- @property subject
+    -- @tparam table subject
     self.subject = subject
 
-    -- Duration of the animation in seconds
+    --- Duration of the animation in seconds.
     -- We currently work with micoseconds. 1 microsecond = 1e-6 second
+    -- @property duration
+    -- @tparam number duration
     self.duration = duration * 1000000
 
-    -- Finale state of of the animation : { prop = val [, ...] }
+    --- Finale state of of the animation.
+    -- This table must be a table with at least the same keys as
+    --   the _subject_. Other keys will be ignored. : { prop = val [, ...] }
+    -- @property target
+    -- @tparam table target
     self.target = target
 
-    -- Animation Function type (string)
+    --- Motion function for the easing.
+    -- @property easing
+    -- @tparam string|function easing
     self.easing = easing
+
+    -- Delay before starting the animation when startAnimation is called.
+    -- @property delay
+    -- @tparam number delay
+    self.delay = 0
 
     -- Tween Object (manage the animation)
     self.tween = nil
@@ -126,9 +147,6 @@ Animation.new = function (subject, duration, target, easing)
     -- Timer of the animation
     -- Glib.Timer's reference
     self.timer = nil
-
-    -- Delay before starting the animation when startAnimation is called
-    self.delay = 0
 
     -- Timer callcabk
     self.timer_function = function ()
@@ -156,6 +174,30 @@ Animation.new = function (subject, duration, target, easing)
 
     return self
 end
+
+--- The animation is started.
+--
+-- This signal is emited when the animation starts.
+-- @signal anim::animation_started
+-- @tparam number delay The additional delay before the animation really starts.
+
+--- The animation is stoped.
+--
+-- This signal is emited when the animation stops.
+-- An animation stop is manually called by the `Animation.stopAnimation` method.
+-- @signal anim::animation_stoped
+
+--- The animation is finished.
+--
+-- This signal is emited when the animation is finished.
+-- @signal anim::animation_finished
+
+--- The animation is updated.
+--
+-- This signal is emited at each animation updates.
+-- @signal anim::animation_updated
+-- @tparam number delta The delta time since last animation update.
+-- @tparam number time The total time the animation is running.
 
 
 mt.__call = function (self, ...)
