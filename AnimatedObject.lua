@@ -93,12 +93,12 @@ end
 AnimatedObject.register_animation = function (self, args)
     if not args.animation then
         return self:register_animation {
-            animation = Animation(
-                self.subject,
-                args.duration or 0,
-                args.target or {},
-                args.easing or nil
-            )
+            animation = Animation {
+                subject = self.subject,
+                duration = args.duration or 0,
+                target = args.target or {},
+                easing = args.easing or nil
+            }
         }
     end
 
