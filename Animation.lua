@@ -127,6 +127,12 @@ end
 --   (See Tween.lua documentation)
 -- @treturn Animation A new instance of Animation.
 -- @function Animation.new
+-- @usage local my_animation = Animation {
+--    subject = my_wibox,
+--    duration = 0.3,
+--    target = { x = 100 },
+--    easing = 'linear'
+-- }
 Animation.new = function (args)
     local self = gobject()
     gtable.crush(self, Animation, true)
