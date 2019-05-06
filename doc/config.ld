@@ -23,7 +23,10 @@ sort_modules = true
 kind_names = { topic = 'Documentation', module = 'Modules' }
 
 topics = {
-    '../README.md'
+    '../README.md',
+    'tests.md',
+    'Animation.md',
+    'AnimatedObject.md'
 }
 
 file = {
