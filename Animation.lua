@@ -105,33 +105,56 @@ end
 --   the _subject_. Other keys will be ignored.
 -- @tparam callback easing Function name or function declaration.
 -- @treturn Animation A new instance of Animation.
+-- @deprecated Animation.deprecated_new
+Animation.deprecated_new = function (subject, duration, target, easing)
+    return Animation {
+        subject = subject,
+        duration = duration,
+        target = target,
+        easing = easing
+    }
+end
+
+--- Animation Constructor.
+-- Creates a new Animation.
+-- @tparam table args
+-- @tparam table args.subject The subject to animate (should be a wibox).
+-- @tparam number args.duration The time the animation will last (in seconds).
+-- @tparam table args.target Representes the final state of the subject at the
+--   animation end. This table must be a table with at least the same keys as
+--   the _subject_. Other keys will be ignored.
+-- @tparam string|function args.easing Function name or function declaration.
+--   (See Tween.lua documentation)
+-- @treturn Animation A new instance of Animation.
 -- @function Animation.new
-Animation.new = function (subject, duration, target, easing)
+Animation.new = function (args)
     local self = gobject()
     gtable.crush(self, Animation, true)
+
+    local args = args or {} -- luacheck: ignore args
 
     --- Subject of the animation (should be a wibox).
     -- @property subject
     -- @tparam table subject
-    self.subject = subject
+    self.subject = args.subject
 
     --- Duration of the animation in seconds.
     -- We currently work with micoseconds. 1 microsecond = 1e-6 second
     -- @property duration
     -- @tparam number duration
-    self.duration = duration * 1000000
+    self.duration = args.duration * 1000000
 
     --- Finale state of of the animation.
     -- This table must be a table with at least the same keys as
     --   the _subject_. Other keys will be ignored. : { prop = val [, ...] }
     -- @property target
     -- @tparam table target
-    self.target = target
+    self.target = args.target
 
     --- Motion function for the easing.
     -- @property easing
     -- @tparam string|function easing
-    self.easing = easing
+    self.easing = args.easing
 
     -- Delay before starting the animation when startAnimation is called.
     -- @property delay
@@ -201,6 +224,14 @@ end
 
 
 mt.__call = function (self, ...)
+    --
+    -- This section will be deleted at release 1.0 with all deprecated stuff
+    if #{...} > 1 then
+        deprecate("Please use the new constructor arguments style.")
+        return Animation.deprecated_new(...)
+    end
+    --
+
     return Animation.new(...)
 end
 
