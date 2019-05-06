@@ -183,6 +183,9 @@ Animation.new = function (args)
 
     -- Timer callcabk
     self.timer_function = function ()
+        -- check if the animation was stoped while we were sleeping
+        if self.tween == nil then return false end
+
         -- compute delta time
         local time = glib.get_monotonic_time()
         local delta = time - self.last_elapsed
