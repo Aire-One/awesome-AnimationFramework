@@ -103,6 +103,8 @@ AnimatedObject.register_animation = function (self, args)
     end
 
     self.anims[#self.anims + 1] = args.animation
+    self.anims[#self.anims]:connect_signal('anim::animation_finished',
+        self.anim_finiched_signal)
 
     if args.delay then
         self.anims[self.anims].delay = args.delay
