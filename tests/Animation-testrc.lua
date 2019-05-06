@@ -75,7 +75,7 @@ animationWidget:connect_signal('mouse::enter', function ()
 
     -- Use signals to notify what happen with animW
     animW:connect_signal('anim::animation_started',
-        function (s) print('anim stared', s) end)
+        function (s, delay) print('anim stared', s, 'delay=' .. delay) end)
     animW:connect_signal('anim::animation_updated',
         function (s, delta) print('anim updated', s, ' delta=' .. delta) end)
     animW:connect_signal('anim::animation_finished',
