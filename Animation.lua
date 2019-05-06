@@ -32,6 +32,11 @@ local deprecate = gears.debug.deprecate
 
 local tween = require('awesome-AnimationFramework/tween-lua/tween')
 
+local time_conversion = {
+    micro_to_milli = function (micro) return micro / 1000 end,
+    second_to_micro = function (sec) return  sec * 1000000 end
+}
+
 
 local Animation = {
     --- Time between two frames in milliseconds (default emulate 60 FPS).
@@ -145,10 +150,9 @@ Animation.new = function (args)
     self.subject = args.subject
 
     --- Duration of the animation in seconds.
-    -- We currently work with micoseconds. 1 microsecond = 1e-6 second
     -- @property duration
     -- @tparam number duration
-    self.duration = args.duration * 1000000
+    self.duration = time_conversion.second_to_micro(args.duration)
 
     --- Finale state of of the animation.
     -- This table must be a table with at least the same keys as
@@ -186,8 +190,9 @@ Animation.new = function (args)
 
         local completed = self.tween:update(delta)
 
-        -- TODO : specify where to use seconds/milli/micro
-        self:emit_signal('anim::animation_updated', delta, time)
+        self:emit_signal('anim::animation_updated',
+            time_conversion.micro_to_milli(delta),
+            time_conversion.micro_to_milli(time))
 
         -- notify awesome the object need to be redrawn
         --mObject:emit_signal('widget::redraw_needed')
