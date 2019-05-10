@@ -67,19 +67,19 @@ animationWidget:connect_signal('mouse::enter', function ()
     wid:register_animation {
         target = { width = 300 },
         easing = 'inOutCubic',
-        duration = 0.25
+        duration = 0.325
     }
 
     -- you can also get back the Animation object...
     local animH = wid:register_animation {
         target = { height = 300 },
         easing = 'inOutCubic',
-        duration = 0.325
+        duration = 0.25
     }
 
     -- ... and use it just like in the previous example:
-    -- you can add the delay
-    animH.delay = 0.075
+    -- you can add the delay (0.075 seconds * 1000 to convert to milliseconds)
+    animH.delay = 75
     -- or connect its own signals
     animH:connect_signal('anim::animation_started',
         function (s) print('anim stared', s) end)
