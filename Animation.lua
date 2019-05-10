@@ -34,7 +34,8 @@ local tween = require('awesome-AnimationFramework/tween-lua/tween')
 
 local time_conversion = {
     micro_to_milli = function (micro) return micro / 1000 end,
-    second_to_micro = function (sec) return  sec * 1000000 end
+    second_to_micro = function (sec) return  sec * 1000000 end,
+    second_to_milli = function (sec) return sec * 1000 end
 }
 
 
@@ -52,7 +53,7 @@ local mt = {}
 -- @method Animation.startAnimation
 Animation.startAnimation = function (self, delay)
     if type(delay) == 'number' then
-        self.delay = delay
+        self.delay = time_conversion.second_to_milli(delay)
     end
 
     -- Temporary timer to create the start delay.
@@ -98,7 +99,7 @@ end
 Animation.setStartDelay = function (self, delay)
     deprecate("Please use `Animation.delay` property instead.")
 
-    self.delay = delay
+    self.delay = time_conversion.second_to_micro(delay)
 end
 
 --- Animation Constructor.
@@ -130,6 +131,8 @@ end
 --   the _subject_. Other keys will be ignored.
 -- @tparam string|function args.easing Function name or function declaration.
 --   (See Tween.lua documentation)
+-- @tparam number args.delay Delay before starting the animation when
+--   startAnimation is called (second).
 -- @treturn Animation A new instance of Animation.
 -- @function Animation.new
 -- @usage local my_animation = Animation {
@@ -166,10 +169,10 @@ Animation.new = function (args)
     -- @tparam string|function easing
     self.easing = args.easing
 
-    -- Delay before starting the animation when startAnimation is called.
+    -- Delay before starting the animation when startAnimation is called (microsecond).
     -- @property delay
     -- @tparam number delay
-    self.delay = 0
+    self.delay = time_conversion.second_to_milli(args.delay or 0)
 
     -- Tween Object (manage the animation)
     self.tween = nil

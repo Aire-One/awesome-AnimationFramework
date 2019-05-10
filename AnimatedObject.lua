@@ -92,7 +92,7 @@ end
 -- }
 AnimatedObject.register_animation = function (self, args)
     if not args.animation then
-        return self:register_animation {
+        args.animation = self:register_animation {
             animation = Animation {
                 subject = self.subject,
                 duration = args.duration or 0,
@@ -107,7 +107,8 @@ AnimatedObject.register_animation = function (self, args)
         self.anim_finiched_signal)
 
     if args.delay then
-        self.anims[self.anims].delay = args.delay
+        args.delay = args.delay * 1000
+        self.anims[#self.anims].delay = args.delay
     end
 
     return args.animation
