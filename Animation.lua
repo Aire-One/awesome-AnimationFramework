@@ -25,7 +25,6 @@
 local glib = require('lgi').GLib
 local gears = require('gears')
 local gobject = gears.object
-local gtable = gears.table
 
 local deprecate = gears.debug.deprecate
 
@@ -142,8 +141,11 @@ end
 --    easing = 'linear'
 -- }
 Animation.new = function (args)
-    local self = gobject()
-    gtable.crush(self, Animation, true)
+    local self = gobject {
+        class = Animation,
+        enable_properties = true,
+        enable_auto_signals = true
+    }
 
     local args = args or {} -- luacheck: ignore args
 

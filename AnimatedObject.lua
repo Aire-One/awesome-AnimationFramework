@@ -178,8 +178,11 @@ end
 -- @treturn AnimatedObject An AnimatedObject instance.
 -- @function AnimatedObject.new
 AnimatedObject.new = function (object)
-    local self = gobject()
-    gtable.crush(self, AnimatedObject, true)
+    local self = gobject {
+        class = AnimatedObject,
+        enable_properties = true,
+        enable_auto_signals = true
+    }
 
     --- Subject of the animation (should be a wibox).
     -- @property subject
