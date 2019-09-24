@@ -132,13 +132,22 @@ end
 --   (See Tween.lua documentation)
 -- @tparam number args.delay Delay before starting the animation when
 --   startAnimation is called (second).
+-- @tparam table args.signals A list of signals to connect to the Animation.
+--   This table is an associative array like this:
+--   `{ signal_name = function_to_connect }`
 -- @treturn Animation A new instance of Animation.
 -- @function Animation.new
 -- @usage local my_animation = Animation {
 --    subject = my_wibox,
 --    duration = 0.3,
 --    target = { x = 100 },
---    easing = 'linear'
+--    easing = 'linear',
+--    signals = {
+--      ['anim::animation_updated'] = print,
+--      ['anim::animation_finished'] = function ()
+--          print('finished')
+--      end
+--    }
 -- }
 Animation.new = function (args)
     local self = gobject {
@@ -212,6 +221,13 @@ Animation.new = function (args)
 
         -- call again the function after cooldown
         return true
+    end
+
+    -- Connect signals
+    if args.signals then
+        for sig,sigfun in pairs(args.signals) do
+            self:connect_signal(sig, sigfun)
+        end
     end
 
     return self
