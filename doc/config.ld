@@ -30,7 +30,6 @@ topics = {
 }
 
 file = {
-    '../init.lua',
     '../Animation.lua',
     '../AnimatedObject.lua'
 }
