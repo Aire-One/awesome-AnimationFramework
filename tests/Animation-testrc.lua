@@ -27,67 +27,95 @@
 
 -- require user rc.lua as a base config
 -- user rc.lua file should be on a place loaded by awesomewm
-require('rc')
+require 'rc'
 
 -- load awesome wm libraries
-local wibox = require('wibox')
+local wibox = require 'wibox'
 
 -- Loading the library to test it
 -- again, the file should be placed in a directory loaded by awesomewm
-local Animation = require('awesome-AnimationFramework.Animation')
+local Animation = require 'awesome-AnimationFramework.Animation'
 
 -- Material Design involve asymmetric transformations when
 -- expending  and collapsing elements.
 -- Here is an example of Material Design Animation :
 
 -- The animation will be shown with an empty wibox
-local animationWidget = wibox ({
+local animationWibox = wibox {
     ontop = true,
     visible = true,
-    opacity = 1,
     x = 50,
     y = 50,
     width = 100,
     height = 100
-})
+}
 
--- Expend transformation will occur when mouse::enter event is triggered
-animationWidget:connect_signal('mouse::enter', function ()
-    -- An animation is an instance of Animation object.
+-- Inflate motion will occur when mouse::enter event is triggered.
+animationWibox:connect_signal('mouse::enter', function (c)
+    -- Declare our animations:
+    --
     -- Material Design Animation for transformations uses a Bezier curve
     -- referred as "ease in out".
     -- (see https://material.io/guidelines/motion/duration-easing.html#duration-easing-natural-easing-curves)
     -- From the tween.lua documentation, "inOutCubic" is the more appropriated
     -- function type to use to copy this motion style.
-    local animW = Animation(animationWidget,
-        0.325, { width = 300 }, 'inOutCubic')
-    local animH = Animation(animationWidget,
-        0.25, { height = 300 }, 'inOutCubic')
-
-    -- Once the Animations objects created,
-    -- we can start them using :startAnimation method
-    animW:startAnimation()
-
+    --
     -- Following Material Design guidelines, we need to add a small delay
     -- to recreate the asymmetric motion movement.
     -- (see https://material.io/guidelines/motion/transforming-material.html#transforming-material-rectangular-transformation)
-    animH:startAnimation(0.075)
+    local animW = Animation {
+        subject = animationWibox,
+        duration = 0.325,
+        target = { width = 300 },
+        easing = 'inOutCubic'
+    }
+    local animH = Animation {
+        subject = animationWibox,
+        duration = 0.25,
+        delay = 0.075,
+        target = { height = 300 },
+        easing = 'inOutCubic'
+    }
 
-    -- Use signals to notify what happen with animW
+    -- Use signals to notify the user what happen with animW:
     animW:connect_signal('anim::animation_started',
-        function (s, delay) print('anim stared', s, 'delay=' .. delay) end)
+        function (s) print('anim stared', s) end)
     animW:connect_signal('anim::animation_updated',
         function (s, delta) print('anim updated', s, ' delta=' .. delta) end)
     animW:connect_signal('anim::animation_finished',
         function (s) print('anim finished', s) end)
     animW:connect_signal('anim::animation_stoped',
         function (s) print('I will never be called cauz the animation is never stopped', s) end)
+
+    -- Start our animations:
+    animW:startAnimation()
+    animH:startAnimation()
 end)
 
--- Same logic for collapse transformation on  mouse::leave event
-animationWidget:connect_signal('mouse::leave', function ()
-    local animW = Animation(animationWidget, 0.325, { width = 100 }, 'inOutCubic')
-    local animH = Animation(animationWidget, 0.25, { height = 100 }, 'inOutCubic')
-    animH:startAnimation()
-    animW:startAnimation(0.075)
+-- Same logic for collapse motion on `mouse::leave` event.
+animationWibox:connect_signal('mouse::leave', function (c)
+    -- Collapse height motion:
+    Animation {
+        subject = animationWibox,
+        duration = 0.25,
+        delay = 0.075,
+        target = { width = 100 },
+        easing = 'inOutCubic',
+        signals = {
+            ['anim::animation_started'] = function (s) print('stared', s) end,
+            ['anim::animation_finished'] = function (s) print('finished', s) end
+        }
+    }:startAnimation()
+
+    -- Collapse width motion:
+    Animation {
+        subject = animationWibox,
+        duration = 0.325,
+        target = { height = 100 },
+        easing = 'inOutCubic',
+        signals = {
+            ['anim::animation_started'] = function (s) print('stared', s) end,
+            ['anim::animation_finished'] = function (s) print('finished', s) end
+        }
+    }:startAnimation()
 end)
