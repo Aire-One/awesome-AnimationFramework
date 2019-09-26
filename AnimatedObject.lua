@@ -70,7 +70,7 @@ end
 -- @tparam AnimatedObject self The AnimatedObject itself.
 -- @tparam table args table with options for the animation to register (other
 --   fields will be ignored if `args.animation` is specified).
--- @tparam Animation args.animation The animation to register.
+-- @tparam[opt] Animation args.animation The animation to register.
 -- @tparam table args.target Representes the final state of the subject at the
 --   animation end. This table must be a table with at least the same keys as
 --   the _subject_. Other keys will be ignored.
