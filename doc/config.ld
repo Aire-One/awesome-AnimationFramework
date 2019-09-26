@@ -25,8 +25,7 @@ kind_names = { topic = 'Documentation', module = 'Modules' }
 topics = {
     '../README.md',
     'tests.md',
-    'Animation.md',
-    'AnimatedObject.md'
+    'Animation.md'
 }
 
 file = {
