@@ -22,7 +22,13 @@ local animated_wibox = {}
 local mt = {}
 
 animated_wibox.register_animation = function (self, args)
-    for i,animation in ipairs(args) do -- luacheck: ignore i
+    -- If caller wants to creating a new single animation.
+    if args.target ~= nil and args.easing ~= nil and args.duration ~= nil  then
+        self:register_animation { Animation(args) }
+        return
+    end
+
+    for id,animation in pairs(args) do
         -- We use the startAnimation method to identify Animation objects
         if type(animation.startAnimation) == 'function' then
             -- raise an error if a subject is already specified and it's not
@@ -32,39 +38,70 @@ animated_wibox.register_animation = function (self, args)
             end
             assert(animation.subject == self)
 
-            self.animations[#self.animations + 1] = animation
+            if not self.animations[id] then self.animations[id] = {} end
+            table.insert(self.animations[id], animation)
         else
-            self:register_animation { Animation(animation) }
+            self:register_animation { [id] = Animation(animation) }
+        end
+    end
+end
+
+animated_wibox.start_animations = function (self, id)
+    -- Helper function to iterate through a group of animation and start them.
+    local start_group_anim = function (group)
+        for _,anim in pairs(group) do
+            anim:startAnimation()
         end
     end
 
-    -- creating a single animation
-    if args.target ~= nil and args.easing ~= nil and args.duration ~= nil  then
-        self:register_animation { Animation(args) }
+    if id then
+        start_group_anim(self.animations[id])
+    else
+        for _,grp_anim in pairs(self.animations) do
+            start_group_anim(grp_anim)
+        end
     end
 end
 
-animated_wibox.start_animations = function (self)
-    for i,anim in ipairs(self.animations) do -- luacheck: ignore i
-        anim:startAnimation()
+animated_wibox.stop_animations = function (self, id)
+    -- Helper function to iterate through a group of animation and stop them.
+    local stop_group_anim = function (group)
+        for _,anim in pairs(group) do
+            anim:stopAnimation()
+        end
+    end
+
+    if id then
+        stop_group_anim(self.animations[id])
+    else
+        for _,grp_anim in pairs(self.animations) do
+            stop_group_anim(grp_anim)
+        end
     end
 end
 
-animated_wibox.stop_animations = function (self)
-    for i,anim in ipairs(self.animations) do -- luacheck: ignore i
-        anim:stopAnimation()
-    end
-end
+animated_wibox.clear_animations = function (self, id)
+    self:stop_animations(id)
 
-animated_wibox.clear_animations = function (self)
-    self:stop_animations()
-    self.animations = {}
+    if id then
+        self.animations[id] = nil
+    else
+        self.animations = {}
+    end
 end
 
 animated_wibox.play_animation = function (self, animations)
     self:clear_animations()
     self:register_animation(animations)
     self:start_animations()
+end
+
+animated_wibox.animate = function (self, animations)
+    for id,anim in pairs(animations) do
+        self:clear_animations(id)
+        self:register_animation { [id] = anim }
+        self:start_animations(id)
+    end
 end
 
 animated_wibox.new = function (args)
