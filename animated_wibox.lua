@@ -41,7 +41,14 @@ animated_wibox.register_animation = function (self, args)
             if not self.animations[id] then self.animations[id] = {} end
             table.insert(self.animations[id], animation)
         else
-            self:register_animation { [id] = Animation(animation) }
+            if type(animation.target) == 'table' then
+                self:register_animation { [id] = Animation(animation) }
+            else
+                -- We can have an array of animations relative to the same id
+                for _,anim in pairs(animation) do
+                    self:register_animation { [id] = anim }
+                end
+            end
         end
     end
 end
