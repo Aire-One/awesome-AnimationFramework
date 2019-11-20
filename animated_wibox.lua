@@ -56,6 +56,7 @@ end
 animated_wibox.start_animations = function (self, id)
     -- Helper function to iterate through a group of animation and start them.
     local start_group_anim = function (group)
+        if not group then return end
         for _,anim in pairs(group) do
             anim:startAnimation()
         end
@@ -73,6 +74,7 @@ end
 animated_wibox.stop_animations = function (self, id)
     -- Helper function to iterate through a group of animation and stop them.
     local stop_group_anim = function (group)
+        if not group then return end
         for _,anim in pairs(group) do
             anim:stopAnimation()
         end
