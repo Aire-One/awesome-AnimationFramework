@@ -70,6 +70,7 @@ Animation.startAnimation = function (self, delay)
             self.ANIMATION_FRAME_DELAY,
             self.timer_function)
 
+        self.timer_running = true
         self:emit_signal('anim::animation_started', self.delay)
 
         return false -- do not call again
@@ -81,10 +82,11 @@ end
 -- @method Animation.stopAnimation
 Animation.stopAnimation = function (self)
     self.tween = nil -- free the tween memory
-    if type(self.timer) == "table" and self.timer.stared then
+    if self.timer and self.timer_running then
         glib.source_remove(self.timer)
         self.timer = nil  -- this reference no longer exists in glib's memory
 
+        self.timer_running = false
         self:emit_signal('anim::animation_stoped')
     end
 end
@@ -195,6 +197,8 @@ Animation.new = function (args)
     -- Glib.Timer's reference
     self.timer = nil
 
+    self.timer_running = false
+
     -- Timer callcabk
     self.timer_function = function ()
         -- check if the animation was stoped while we were sleeping
@@ -215,6 +219,7 @@ Animation.new = function (args)
         --mObject:emit_signal('widget::redraw_needed')
 
         if completed then
+            self.timer_running = false
             self:emit_signal('anim::animation_finished')
             return false -- stop calling the function
         end
